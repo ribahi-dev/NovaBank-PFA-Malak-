@@ -1,19 +1,16 @@
-// Client HTTP central : baseURL, jeton JWT automatique, refresh transparent.
-// TOUTES les requêtes de l'application passent par cette instance.
+// Client HTTP central : jeton JWT automatique + refresh transparent sur 401.
 import axios from "axios";
 
 const api = axios.create({ baseURL: "/api" });
 
-// Chaque requête sortante embarque l'access token s'il existe.
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("access_token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Sur un 401 : on tente UNE fois le refresh, puis on rejoue la requête.
-// Si le refresh échoue (expiré/révoqué), on déconnecte proprement.
-let refreshing = null;
+let refreshing: Promise<{ data: { access_token: string; refresh_token: string } }> | null = null;
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -22,9 +19,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && refreshToken && !original._retried) {
       original._retried = true;
       try {
-        refreshing =
-          refreshing ??
-          axios.post("/api/auth/refresh", { refresh_token: refreshToken });
+        refreshing = refreshing ?? axios.post("/api/auth/refresh", { refresh_token: refreshToken });
         const { data } = await refreshing;
         refreshing = null;
         localStorage.setItem("access_token", data.access_token);
@@ -40,5 +35,15 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+/** Extrait un message d'erreur lisible d'une réponse FastAPI. */
+export function apiError(err: unknown, fallback = "Une erreur est survenue"): string {
+  if (axios.isAxiosError(err)) {
+    const detail = err.response?.data?.detail;
+    if (typeof detail === "string") return detail;
+    if (Array.isArray(detail)) return "Formulaire invalide — vérifiez les champs.";
+  }
+  return fallback;
+}
 
 export default api;
