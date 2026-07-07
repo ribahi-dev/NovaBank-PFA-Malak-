@@ -23,4 +23,6 @@ RUN useradd --create-home appuser
 USER appuser
 
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# L'entrypoint attend la base, crée les tables, injecte les données de démo
+# (si base vide) puis lance uvicorn — un seul `docker compose up` suffit.
+CMD ["python", "-m", "scripts.docker_entrypoint"]

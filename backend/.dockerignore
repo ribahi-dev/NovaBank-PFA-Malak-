@@ -1,0 +1,16 @@
+# Exclut du contexte de build Docker tout ce qui ne doit PAS entrer dans
+# l'image : environnement virtuel local, caches, tests, secrets.
+# Sans ce fichier, `docker build` copierait venv/ (des centaines de Mo)
+# dans le contexte -> build lent et image polluée.
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+tests/
+.env
+alembic/
+ml_artifacts/
+*.joblib

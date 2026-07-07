@@ -62,5 +62,16 @@ services:
       postgres:
         condition: service_healthy   # attend que pg_isready réponde (voir healthcheck)
 
+  frontend:
+    build: ./frontend           # image nginx construite depuis frontend/Dockerfile
+    container_name: novabank_frontend
+    restart: unless-stopped
+    ports:
+      # L'application complète s'ouvre ici : http://localhost:8090
+      # (8080 est souvent déjà pris par un autre service sur la machine).
+      - "8090:80"
+    depends_on:
+      - api
+
 volumes:
   postgres_data:

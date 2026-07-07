@@ -1,0 +1,6 @@
+# Exclut node_modules et dist du contexte de build : ils seront régénérés
+# proprement DANS l'image (npm ci + npm run build). Les copier depuis
+# l'hôte alourdirait le build et risquerait des binaires incompatibles.
+node_modules/
+dist/
+.env

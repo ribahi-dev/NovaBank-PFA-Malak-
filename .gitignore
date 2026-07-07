@@ -28,3 +28,10 @@ Thumbs.db
 # Local generated files
 tmp/
 
+# Artefacts de modèle ML (générés par l'entraînement, jamais versionnés)
+ml_artifacts/
+*.joblib
+
+# Build Vite
+frontend/dist/
+
